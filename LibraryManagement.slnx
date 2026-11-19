@@ -1,3 +1,9 @@
 <Solution>
+  <Project Path="Portfolio.Storage/Portfolio.Storage.csproj" />
   <Project Path="LibraryManagement/LibraryManagement.csproj" />
+  <Project Path="CSharpProjects/OrderFlow/OrderFlow.csproj" />
+  <Project Path="CSharpProjects/LedgerCore/LedgerCore.csproj" />
+  <Project Path="CSharpProjects/StockSignalR/StockSignalR.csproj" />
+  <Project Path="CSharpProjects/SecureFiles/SecureFiles.csproj" />
+  <Project Path="CSharpProjects/BookingEngine/BookingEngine.csproj" />
 </Solution>

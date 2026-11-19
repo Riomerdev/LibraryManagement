@@ -1,148 +1,98 @@
 using LibraryManagement.Models;
-using LibraryManagement.Services;
+using Portfolio.Storage;
 
-var library = new LibraryService();
+var builder = WebApplication.CreateBuilder(args);
+var statePath = builder.Configuration["DATA_FILE"]
+    ?? Path.Combine(builder.Environment.ContentRootPath, "data", "library.json");
+builder.Services.AddSingleton(new JsonStore<LibraryState>(statePath));
+builder.Services.AddProblemDetails();
+var app = builder.Build();
+app.UseExceptionHandler();
 
-// Sample data makes the main flows usable immediately after launch.
-library.AddBook("Clean Code", "Robert C. Martin");
-library.AddBook("The Pragmatic Programmer", "Andrew Hunt and David Thomas");
-library.AddBook("The Hobbit", "J. R. R. Tolkien");
+app.MapGet("/", () => Results.Redirect("/health"));
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "library-management" }));
 
-var isRunning = true;
+app.MapGet("/api/books", async (string? q, string? branchId, JsonStore<LibraryState> store, CancellationToken ct) =>
+    await store.ReadAsync(state => state.Books
+        .Where(book => string.IsNullOrWhiteSpace(branchId) || book.BranchId == branchId)
+        .Where(book => string.IsNullOrWhiteSpace(q) ||
+            book.Title.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            book.Author.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+            (book.Isbn?.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false))
+        .OrderBy(book => book.Title)
+        .Select(book => new { book.Id, book.Title, book.Author, book.Isbn, book.BranchId,
+            IsAvailable = !state.Loans.Any(loan => loan.BookId == book.Id && loan.ReturnedAt is null) })
+        .ToArray(), ct));
 
-while (isRunning)
+app.MapPost("/api/books", async (AddBookRequest request, JsonStore<LibraryState> store, CancellationToken ct) =>
 {
-    PrintMenu();
-
-    switch (Console.ReadLine()?.Trim())
+    if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Author) ||
+        string.IsNullOrWhiteSpace(request.BranchId))
+        return Results.ValidationProblem(new Dictionary<string, string[]>
+        {
+            ["title, author, branchId"] = ["All three fields are required."]
+        });
+    var book = await store.UpdateAsync(state =>
     {
-        case "1":
-            PrintBooks(library.GetAll());
-            break;
-        case "2":
-            AddBook();
-            break;
-        case "3":
-            SearchBooks();
-            break;
-        case "4":
-            BorrowBook();
-            break;
-        case "5":
-            ReturnBook();
-            break;
-        case "0":
-            isRunning = false;
-            Console.WriteLine("Hasta pronto.");
-            break;
-        default:
-            Console.WriteLine("Opción no válida. Elige un número del menú.");
-            break;
-    }
-}
+        if (!string.IsNullOrWhiteSpace(request.Isbn) &&
+            state.Books.Any(item => item.Isbn == request.Isbn.Trim()))
+            return (Book: (Book?)null, Duplicate: true);
+        var created = new Book(Guid.NewGuid(), request.Title.Trim(), request.Author.Trim(),
+            string.IsNullOrWhiteSpace(request.Isbn) ? null : request.Isbn.Trim(), request.BranchId.Trim(),
+            DateTimeOffset.UtcNow);
+        state.Books.Add(created);
+        return (Book: (Book?)created, Duplicate: false);
+    }, ct);
+    if (book.Duplicate) return Results.Conflict(new { error = "ISBN already exists." });
+    return Results.Created($"/api/books/{book.Book!.Id}", book.Book);
+});
 
-void PrintMenu()
+app.MapPost("/api/books/{bookId:guid}/loans", async (
+    Guid bookId, CreateLoanRequest request, JsonStore<LibraryState> store, CancellationToken ct) =>
 {
-    Console.WriteLine();
-    Console.WriteLine("=== Biblioteca ===");
-    Console.WriteLine("1. Ver libros");
-    Console.WriteLine("2. Agregar libro");
-    Console.WriteLine("3. Buscar libro");
-    Console.WriteLine("4. Prestar libro");
-    Console.WriteLine("5. Devolver libro");
-    Console.WriteLine("0. Salir");
-    Console.Write("Selecciona una opción: ");
-}
-
-void PrintBooks(IEnumerable<Book> books)
-{
-    var results = books.ToArray();
-
-    if (results.Length == 0)
+    if (string.IsNullOrWhiteSpace(request.MemberId))
+        return Results.ValidationProblem(new Dictionary<string, string[]> { ["memberId"] = ["Member is required."] });
+    var outcome = await store.UpdateAsync(state =>
     {
-        Console.WriteLine("No se encontraron libros.");
-        return;
-    }
+        if (!state.Books.Any(book => book.Id == bookId)) return (Loan: (Loan?)null, Error: "Book not found.");
+        if (state.Loans.Any(loan => loan.BookId == bookId && loan.ReturnedAt is null))
+            return (Loan: (Loan?)null, Error: "Book is already on loan.");
+        var loan = new Loan(Guid.NewGuid(), bookId, request.MemberId.Trim(),
+            DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(14), null);
+        state.Loans.Add(loan);
+        return (Loan: (Loan?)loan, Error: (string?)null);
+    }, ct);
+    return outcome.Loan is null
+        ? Results.Conflict(new { error = outcome.Error })
+        : Results.Created($"/api/loans/{outcome.Loan.Id}", outcome.Loan);
+});
 
-    Console.WriteLine();
-    foreach (var book in results)
+app.MapGet("/api/loans/overdue", async (JsonStore<LibraryState> store, CancellationToken ct) =>
+    await store.ReadAsync(state => state.Loans
+        .Where(loan => loan.ReturnedAt is null && loan.DueAt < DateTimeOffset.UtcNow)
+        .OrderBy(loan => loan.DueAt).ToArray(), ct));
+
+app.MapPost("/api/loans/{loanId:guid}/return", async (
+    Guid loanId, JsonStore<LibraryState> store, CancellationToken ct) =>
+{
+    var outcome = await store.UpdateAsync(state =>
     {
-        var status = book.IsAvailable ? "Disponible" : "Prestado";
-        Console.WriteLine($"[{book.Id}] {book.Title} — {book.Author} ({status})");
-    }
-}
+        var index = state.Loans.FindIndex(loan => loan.Id == loanId && loan.ReturnedAt is null);
+        if (index < 0) return (Loan: (Loan?)null, Error: "Active loan not found.");
+        state.Loans[index] = state.Loans[index] with { ReturnedAt = DateTimeOffset.UtcNow };
+        return (Loan: (Loan?)state.Loans[index], Error: (string?)null);
+    }, ct);
+    return outcome.Loan is null ? Results.NotFound(new { error = outcome.Error }) : Results.Ok(outcome.Loan);
+});
 
-void AddBook()
+app.Run();
+
+public sealed class LibraryState
 {
-    var title = ReadRequiredText("Título");
-    var author = ReadRequiredText("Autor");
-
-    if (title is null || author is null)
-    {
-        Console.WriteLine("El título y el autor son obligatorios.");
-        return;
-    }
-
-    var book = library.AddBook(title, author);
-    Console.WriteLine($"Libro agregado con el ID {book.Id}.");
+    public List<Book> Books { get; set; } = [];
+    public List<Loan> Loans { get; set; } = [];
 }
-
-void SearchBooks()
-{
-    var query = ReadRequiredText("Buscar por título o autor");
-
-    if (query is null)
-    {
-        Console.WriteLine("Escribe un término para buscar.");
-        return;
-    }
-
-    PrintBooks(library.Search(query));
-}
-
-void BorrowBook()
-{
-    var bookId = ReadBookId();
-
-    if (bookId is null)
-    {
-        return;
-    }
-
-    Console.WriteLine(
-        library.TryBorrow(bookId.Value)
-            ? "Préstamo registrado."
-            : "No existe un libro disponible con ese ID.");
-}
-
-void ReturnBook()
-{
-    var bookId = ReadBookId();
-
-    if (bookId is null)
-    {
-        return;
-    }
-
-    Console.WriteLine(
-        library.TryReturn(bookId.Value)
-            ? "Devolución registrada."
-            : "No existe un préstamo activo con ese ID.");
-}
-
-string? ReadRequiredText(string prompt)
-{
-    Console.Write($"{prompt}: ");
-    var input = Console.ReadLine();
-
-    return string.IsNullOrWhiteSpace(input) ? null : input.Trim();
-}
-
-int? ReadBookId()
-{
-    Console.Write("ID del libro: ");
-
-    return int.TryParse(Console.ReadLine(), out var bookId) && bookId > 0
-        ? bookId
-        : null;
-}
+public sealed record AddBookRequest(string Title, string Author, string? Isbn, string BranchId);
+public sealed record CreateLoanRequest(string MemberId);
+public sealed record Loan(Guid Id, Guid BookId, string MemberId, DateTimeOffset BorrowedAt,
+    DateTimeOffset DueAt, DateTimeOffset? ReturnedAt);

@@ -1,6 +1,5 @@
 namespace LibraryManagement.Models;
 
-/// <summary>
-/// Represents a book in the library catalog.
-/// </summary>
-public sealed record Book(int Id, string Title, string Author, bool IsAvailable = true);
+/// <summary>Catalog entry scoped to one library branch.</summary>
+public sealed record Book(Guid Id, string Title, string Author, string? Isbn, string BranchId,
+    DateTimeOffset CreatedAt);

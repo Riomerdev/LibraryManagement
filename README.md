@@ -1,37 +1,35 @@
-# csharp-dotnet-projects
+# C# / .NET Portfolio
 
-Aplicación de consola en C# para administrar un catálogo pequeño de biblioteca. Permite listar, buscar, agregar, prestar y devolver libros desde un menú interactivo.
+Colección de seis aplicaciones C# con problemas de negocio distintos. Cada carpeta incluye su guía de uso. El repositorio utiliza .NET 10, ASP.NET Core Minimal APIs, registros tipados y reglas de dominio; los servicios locales conservan los datos en archivos JSON mediante escritura atómica.
 
-## Funciones
+| Proyecto | Problema | Técnicas |
+|---|---|---|
+| [LibraryManagement](LibraryManagement/README.md) | Catálogo, préstamos y vencimientos multi-sede | Minimal API, persistencia, validación |
+| [OrderFlow](CSharpProjects/OrderFlow/README.md) | Procesamiento de pedidos | máquina de estados, idempotencia, outbox |
+| [LedgerCore](CSharpProjects/LedgerCore/README.md) | Libro contable balanceado | doble partida, centavos enteros, conciliación |
+| [StockSignalR](CSharpProjects/StockSignalR/README.md) | Disponibilidad de almacén | reservas atómicas, SignalR |
+| [SecureFiles](CSharpProjects/SecureFiles/README.md) | Documentos por organización | API key, límites, firma de archivo, SHA-256 |
+| [BookingEngine](CSharpProjects/BookingEngine/README.md) | Agenda de recursos | UTC, prevención de solapamientos, hold temporal |
 
-- Catálogo con identificadores y estado de disponibilidad.
-- Búsqueda por título o autor, sin distinguir mayúsculas.
-- Registro de préstamos y devoluciones con validación de estado.
-- Datos de ejemplo para probar el menú al iniciar.
+## Requisitos y ejecución
 
-## Ejecutar
+Instala el SDK de .NET 10. Desde la raíz, ejecuta el proyecto que quieras:
 
-Se necesita el SDK de .NET 10. Desde la carpeta raíz del repositorio:
-
-```powershell
+~~~powershell
 dotnet run --project LibraryManagement
-```
+dotnet run --project CSharpProjects/OrderFlow
+dotnet run --project CSharpProjects/LedgerCore
+dotnet run --project CSharpProjects/StockSignalR
+dotnet run --project CSharpProjects/SecureFiles
+dotnet run --project CSharpProjects/BookingEngine
+~~~
 
-Los datos se mantienen en memoria y se reinician al cerrar el programa.
+La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución en cada push y pull request. No se incluyen credenciales ni datos empresariales reales.
 
-## Organización
+## Persistencia y alcance
 
-```text
-LibraryManagement/
-├── Models/
-│   └── Book.cs
-├── Services/
-│   └── LibraryService.cs
-└── Program.cs
-```
+Los servicios escriben datos locales en su carpeta data. Portfolio.Storage serializa las escrituras de una instancia y reemplaza archivos de manera atómica. Es una opción reproducible para una demo; para producción con varios nodos, utiliza PostgreSQL/SQL Server, transacciones, autenticación OIDC, políticas de autorización, secretos administrados y métricas distribuidas. Cada README describe las fronteras del ejemplo.
 
-El modelo `Book` es un record inmutable. `LibraryService` concentra las reglas del catálogo y los cambios de disponibilidad, mientras que `Program.cs` se ocupa del menú y la entrada por consola.
+## Contribuciones y portafolio
 
-## Portfolio notes
-
-This project demonstrates C# records, nullable reference types, collection expressions, LINQ queries, input validation, and separation between the console interface and catalog operations. It is an intentionally small first application; persistence and a web API can be added as later project steps.
+Los proyectos están diseñados para ser ejecutables y para que sus decisiones puedan revisarse desde las guías de cada carpeta. La automatización de compilación no ejecuta pruebas: esta colección debe ampliarse con suites de pruebas y contenedores de integración.
