@@ -1,4 +1,4 @@
-# LibraryManagement
+# csharp-dotnet-projects
 
 Aplicación de consola en C# para administrar un catálogo pequeño de biblioteca. Permite listar, buscar, agregar, prestar y devolver libros desde un menú interactivo.
 
