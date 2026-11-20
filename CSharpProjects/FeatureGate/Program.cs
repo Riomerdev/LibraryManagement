@@ -31,5 +31,33 @@ var flags = new List<FeatureFlag>
 app.MapGet("/api/flags", () => flags)
     .WithName("ListFeatureFlags");
 
+app.MapPost("/api/evaluate", IResult (EvaluateFlagRequest request) =>
+{
+    if (string.IsNullOrWhiteSpace(request.FlagKey) ||
+        string.IsNullOrWhiteSpace(request.UserId))
+    {
+        return Results.BadRequest(new
+        {
+            error = "flagKey and userId are required."
+        });
+    }
+
+    var flag = flags.SingleOrDefault(item => item.Key == request.FlagKey);
+
+    if (flag is null)
+    {
+        return Results.NotFound(new { error = "Flag not found." });
+    }
+
+    return Results.Ok(new
+    {
+        flagKey = flag.Key,
+        userId = request.UserId,
+        enabled = flag.Enabled
+    });
+})
+.WithName("EvaluateFeature");
+
 app.Run();
 
+record EvaluateFlagRequest(string? FlagKey, string? UserId);
