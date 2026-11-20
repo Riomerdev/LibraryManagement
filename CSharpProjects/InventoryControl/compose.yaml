@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-inventory}
+      POSTGRES_USER: ${POSTGRES_USER:-portfolio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your local .env file}
+    ports: ["5433:5432"]
+    volumes:
+      - inventory-db:/var/lib/postgresql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolio -d inventory"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  api:
+    build: .
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Inventory: Host=db;Port=5432;Database=${POSTGRES_DB:-inventory};Username=${POSTGRES_USER:-portfolio};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your local .env file}
+    ports: ["5080:8080"]
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  inventory-db:

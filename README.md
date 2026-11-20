@@ -1,6 +1,6 @@
 # C# / .NET Portfolio
 
-Colección de seis aplicaciones C# con problemas de negocio distintos. Cada carpeta incluye su guía de uso. El repositorio utiliza .NET 10, ASP.NET Core Minimal APIs, registros tipados y reglas de dominio; los servicios locales conservan los datos en archivos JSON mediante escritura atómica.
+Colección de siete aplicaciones C# con problemas de negocio distintos. Cada carpeta incluye su guía de uso. El repositorio utiliza .NET 10, ASP.NET Core Minimal APIs, registros tipados y reglas de dominio; los servicios locales conservan los datos en archivos JSON mediante escritura atómica.
 
 | Proyecto | Problema | Técnicas |
 |---|---|---|
@@ -10,6 +10,7 @@ Colección de seis aplicaciones C# con problemas de negocio distintos. Cada carp
 | [StockSignalR](CSharpProjects/StockSignalR/README.md) | Disponibilidad de almacén | reservas atómicas, SignalR |
 | [SecureFiles](CSharpProjects/SecureFiles/README.md) | Documentos por organización | API key, límites, firma de archivo, SHA-256 |
 | [BookingEngine](CSharpProjects/BookingEngine/README.md) | Agenda de recursos | UTC, prevención de solapamientos, hold temporal |
+| [Inventory Control API](CSharpProjects/InventoryControl/README.md) | Inventario multi-región | EF Core, PostgreSQL, idempotencia, concurrencia optimista |
 
 ## Requisitos y ejecución
 
@@ -24,7 +25,14 @@ dotnet run --project CSharpProjects/SecureFiles
 dotnet run --project CSharpProjects/BookingEngine
 ~~~
 
-La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución en cada push y pull request. No se incluyen credenciales ni datos empresariales reales.
+Inventory Control API usa PostgreSQL y Docker Compose:
+
+~~~sh
+cd CSharpProjects/InventoryControl
+docker compose up --build
+~~~
+
+La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución y también Inventory Control API en cada push y pull request. No se incluyen credenciales ni datos empresariales reales.
 
 ## Persistencia y alcance
 
