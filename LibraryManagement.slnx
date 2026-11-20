@@ -7,4 +7,5 @@
   <Project Path="CSharpProjects/SecureFiles/SecureFiles.csproj" />
   <Project Path="CSharpProjects/BookingEngine/BookingEngine.csproj" />
   <Project Path="CSharpProjects/InventoryControl/InventoryControl.csproj" />
+  <Project Path="CSharpProjects/FeatureGate/FeatureGate.csproj" />
 </Solution>
