@@ -6,4 +6,5 @@
   <Project Path="CSharpProjects/StockSignalR/StockSignalR.csproj" />
   <Project Path="CSharpProjects/SecureFiles/SecureFiles.csproj" />
   <Project Path="CSharpProjects/BookingEngine/BookingEngine.csproj" />
+  <Project Path="CSharpProjects/InventoryControl/InventoryControl.csproj" />
 </Solution>

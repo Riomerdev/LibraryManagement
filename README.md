@@ -32,7 +32,7 @@ cd CSharpProjects/InventoryControl
 docker compose up --build
 ~~~
 
-La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución y también Inventory Control API en cada push y pull request. No se incluyen credenciales ni datos empresariales reales.
+La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución completa en cada push y pull request; Inventory Control API forma parte de ella y añade un entorno PostgreSQL mediante Docker Compose. No se incluyen credenciales ni datos empresariales reales.
 
 ## Persistencia y alcance
 
