@@ -1,6 +1,6 @@
 # C# / .NET Portfolio
 
-Colección de siete proyectos C# completos y un nuevo proyecto en desarrollo. Cada carpeta incluye su guía de uso. Cada carpeta incluye su guía de uso. El repositorio utiliza .NET 10, ASP.NET Core Minimal APIs, registros tipados y reglas de dominio; los servicios locales conservan los datos en archivos JSON mediante escritura atómica.
+Colección de siete proyectos C# completos y un nuevo proyecto en desarrollo. Cada carpeta incluye su guía de uso. El repositorio utiliza .NET 10, ASP.NET Core Minimal APIs, registros tipados y reglas de dominio; los servicios locales conservan los datos en archivos JSON mediante escritura atómica.
 
 | Proyecto | Problema | Técnicas |
 |---|---|---|
@@ -11,7 +11,7 @@ Colección de siete proyectos C# completos y un nuevo proyecto en desarrollo. Ca
 | [SecureFiles](CSharpProjects/SecureFiles/README.md) | Documentos por organización | API key, límites, firma de archivo, SHA-256 |
 | [BookingEngine](CSharpProjects/BookingEngine/README.md) | Agenda de recursos | UTC, prevención de solapamientos, hold temporal |
 | [Inventory Control API](CSharpProjects/InventoryControl/README.md) | Inventario multi-región | EF Core, PostgreSQL, idempotencia, concurrencia optimista |
-| [FeatureGate](CSharpProjects/FeatureGate/README.md) | Activación gradual de funciones (en desarrollo) | ASP.NET Core, OpenAPI, reglas por usuario/porcentaje |
+| [FeatureGate](CSharpProjects/FeatureGate/README.md) | Activación gradual de funciones (en desarrollo) | ASP.NET Core, PostgreSQL, EF Core, migraciones, rollout estable |
 
 ## Requisitos y ejecución
 
@@ -24,7 +24,6 @@ dotnet run --project CSharpProjects/LedgerCore
 dotnet run --project CSharpProjects/StockSignalR
 dotnet run --project CSharpProjects/SecureFiles
 dotnet run --project CSharpProjects/BookingEngine
-dotnet run --project CSharpProjects/FeatureGate
 ~~~
 
 Inventory Control API usa PostgreSQL y Docker Compose:
@@ -33,6 +32,8 @@ Inventory Control API usa PostgreSQL y Docker Compose:
 cd CSharpProjects/InventoryControl
 docker compose up --build
 ~~~
+
+FeatureGate también necesita PostgreSQL y credenciales locales. Sigue [su guía](CSharpProjects/FeatureGate/README.md) antes de ejecutar la aplicación.
 
 La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución completa en cada push y pull request; Inventory Control API forma parte de ella y añade un entorno PostgreSQL mediante Docker Compose. No se incluyen credenciales ni datos empresariales reales.
 

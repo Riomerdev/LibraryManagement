@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:18.7-alpine3.24
+    container_name: featuregate-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: featuregate
+      POSTGRES_USER: featuregate_app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+    ports:
+           - "127.0.0.1:5432:5432"
+    volumes:
+      - featuregate_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U featuregate_app -d featuregate"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  featuregate_postgres_data:
