@@ -7,5 +7,6 @@ public sealed class FeatureFlag
     public string Description { get; set; } = string.Empty;
     public bool Enabled { get; set; }
     public int RolloutPercentage { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAtUtc { get; set; } = DateTimeOffset.UtcNow;
 }
-

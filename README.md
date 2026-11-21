@@ -1,6 +1,6 @@
 # C# / .NET Portfolio
 
-Colección de siete proyectos C# completos y un nuevo proyecto en desarrollo. Cada carpeta incluye su guía de uso. El repositorio utiliza .NET 10, ASP.NET Core Minimal APIs, registros tipados y reglas de dominio; los servicios locales conservan los datos en archivos JSON mediante escritura atómica.
+Colección de proyectos C# con guías independientes, incluidos siete proyectos consolidados y FeatureGate funcional. El repositorio utiliza .NET 10, ASP.NET Core Minimal APIs, registros tipados y reglas de dominio; los servicios locales conservan los datos en archivos JSON mediante escritura atómica.
 
 | Proyecto | Problema | Técnicas |
 |---|---|---|
@@ -11,7 +11,7 @@ Colección de siete proyectos C# completos y un nuevo proyecto en desarrollo. Ca
 | [SecureFiles](CSharpProjects/SecureFiles/README.md) | Documentos por organización | API key, límites, firma de archivo, SHA-256 |
 | [BookingEngine](CSharpProjects/BookingEngine/README.md) | Agenda de recursos | UTC, prevención de solapamientos, hold temporal |
 | [Inventory Control API](CSharpProjects/InventoryControl/README.md) | Inventario multi-región | EF Core, PostgreSQL, idempotencia, concurrencia optimista |
-| [FeatureGate](CSharpProjects/FeatureGate/README.md) | Activación gradual de funciones (en desarrollo) | ASP.NET Core, PostgreSQL, EF Core, migraciones, rollout estable, pruebas unitarias |
+| [FeatureGate](CSharpProjects/FeatureGate/README.md) | Activación gradual, segura y auditable de funciones | ASP.NET Core, PostgreSQL, EF Core, API key, auditoría, Testcontainers |
 
 ## Requisitos y ejecución
 
@@ -35,7 +35,7 @@ docker compose up --build
 
 FeatureGate también necesita PostgreSQL y credenciales locales. Sigue [su guía](CSharpProjects/FeatureGate/README.md) antes de ejecutar la aplicación.
 
-La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución completa y ejecuta las pruebas unitarias de FeatureGate en cada push y pull request a main. Inventory Control API forma parte de la solución y añade un entorno PostgreSQL mediante Docker Compose. No se incluyen credenciales ni datos empresariales reales.
+La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución y ejecuta las pruebas unitarias y de integración de FeatureGate en cada push y pull request a main. Las pruebas de integración levantan PostgreSQL temporal con Docker. Inventory Control API también forma parte de la solución. No se incluyen credenciales ni datos empresariales reales.
 
 Para ejecutar las pruebas de FeatureGate desde la raíz:
 
@@ -49,4 +49,4 @@ Los servicios escriben datos locales en su carpeta data. Portfolio.Storage seria
 
 ## Contribuciones y portafolio
 
-Los proyectos están diseñados para ser ejecutables y para que sus decisiones puedan revisarse desde las guías de cada carpeta. La suite de FeatureGate cubre su lógica de rollout con pruebas unitarias. Aún quedan por agregar pruebas de integración HTTP y base de datos.
+Los proyectos están diseñados para ser ejecutables y para que sus decisiones puedan revisarse desde las guías de cada carpeta. Las pruebas de FeatureGate cubren las reglas de rollout y el flujo HTTP con PostgreSQL temporal. La guía del proyecto explica su alcance y los pasos para ejecutarlo.

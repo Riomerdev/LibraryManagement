@@ -1,6 +1,39 @@
 @FeatureGate_HostAddress = http://localhost:5132
+@AdminApiKey = REPLACE_WITH_YOUR_LOCAL_KEY
 
-GET {{FeatureGate_HostAddress}}/health
+GET {{FeatureGate_HostAddress}}/health/live
 Accept: application/json
 
 ###
+
+GET {{FeatureGate_HostAddress}}/health/ready
+Accept: application/json
+
+###
+
+GET {{FeatureGate_HostAddress}}/api/flags
+X-Admin-Api-Key: {{AdminApiKey}}
+Accept: application/json
+
+###
+
+POST {{FeatureGate_HostAddress}}/api/flags
+X-Admin-Api-Key: {{AdminApiKey}}
+Content-Type: application/json
+
+{
+  "key": "new-checkout",
+  "description": "Nuevo proceso de compra",
+  "enabled": true,
+  "rolloutPercentage": 10
+}
+
+###
+
+POST {{FeatureGate_HostAddress}}/api/evaluate
+Content-Type: application/json
+
+{
+  "flagKey": "new-checkout",
+  "userId": "user-001"
+}

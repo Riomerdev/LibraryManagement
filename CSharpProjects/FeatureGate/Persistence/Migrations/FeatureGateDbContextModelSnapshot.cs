@@ -29,6 +29,10 @@ namespace FeatureGate.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -49,6 +53,10 @@ namespace FeatureGate.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("rollout_percentage");
 
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Key")
@@ -59,8 +67,56 @@ namespace FeatureGate.Persistence.Migrations
                             t.HasCheckConstraint("ck_feature_flags_rollout_percentage", "rollout_percentage BETWEEN 0 AND 100");
                         });
                 });
+
+            modelBuilder.Entity("FeatureGate.Domain.FeatureFlagAudit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("actor");
+
+                    b.Property<string>("AfterJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("after_json");
+
+                    b.Property<string>("BeforeJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("before_json");
+
+                    b.Property<Guid>("FeatureFlagId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("feature_flag_id");
+
+                    b.Property<string>("FlagKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("flag_key");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at_utc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeatureFlagId", "OccurredAtUtc")
+                        .HasDatabaseName("ix_feature_flag_audits_flag_occurred");
+
+                    b.ToTable("feature_flag_audits", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }
 }
-
