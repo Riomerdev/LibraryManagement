@@ -12,11 +12,12 @@ API REST para administrar feature flags y habilitarlas gradualmente para grupos 
 - Crear, listar y consultar feature flags.
 - Evaluar una bandera con un porcentaje estable por combinación de bandera y usuario.
 - Validación de entradas, claves únicas, consultas asíncronas y cancelación de solicitudes.
+- Pruebas unitarias de la lógica de rollout con xUnit.
 - Configuración local con `.env` y .NET Secret Manager; las credenciales no se guardan en Git.
 
 ## Tecnologías
 
-C# 14, .NET 10, ASP.NET Core Minimal APIs, Entity Framework Core 10, PostgreSQL 18, Docker Compose y GitHub Actions.
+C# 14, .NET 10, ASP.NET Core Minimal APIs, Entity Framework Core 10, PostgreSQL 18, Docker Compose, xUnit y GitHub Actions.
 
 ## Ejecutar localmente
 
@@ -89,18 +90,31 @@ Ejemplo de evaluación:
 
 El mismo par de `flagKey` y `userId` siempre obtiene el mismo resultado. Para explorar el contrato OpenAPI en desarrollo, visita `/openapi/v1.json`.
 
+## Pruebas automatizadas
+
+La suite unitaria valida los porcentajes límite, la estabilidad por usuario, una distribución aproximada del rollout y el rechazo de identificadores vacíos. Estas pruebas no necesitan Docker ni conexión a PostgreSQL.
+
+Desde la raíz del repositorio:
+
+~~~powershell
+dotnet test .\CSharpProjects\FeatureGate.Tests\FeatureGate.Tests.csproj --configuration Release
+~~~
+
+GitHub Actions compila la solución completa y ejecuta estas pruebas en cada `push` y `pull_request` a `main`.
+
 ## Estructura
 
 - `Domain/FeatureFlag.cs`: entidad de dominio.
+- `Domain/FeatureFlagRolloutEvaluator.cs`: evaluación determinista y estable del porcentaje.
 - `Persistence/FeatureGateDbContext.cs`: mapeo de EF Core y restricciones.
 - `Persistence/Migrations/`: historial de cambios del esquema.
 - `docker-compose.yml`: PostgreSQL local con volumen persistente y health check.
+- `../FeatureGate.Tests/`: pruebas unitarias con xUnit.
 
 ## Próximos pasos
 
-Agregar actualización y eliminación de banderas, auditoría de cambios, autenticación/autorización y pruebas automatizadas de integración.
+Agregar pruebas automatizadas de integración, auditoría de cambios, autenticación/autorización y actualización controlada de banderas.
 
 ## English summary
 
 An ASP.NET Core feature-flag API with PostgreSQL persistence, EF Core migrations, input validation, and deterministic percentage rollouts.
-

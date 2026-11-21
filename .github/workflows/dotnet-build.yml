@@ -16,3 +16,5 @@ jobs:
           dotnet-version: 10.0.x
       - name: Build portfolio solution
         run: dotnet build LibraryManagement.slnx --configuration Release
+      - name: Run FeatureGate unit tests
+        run: dotnet test CSharpProjects/FeatureGate.Tests/FeatureGate.Tests.csproj --configuration Release --no-build

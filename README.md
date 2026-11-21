@@ -11,7 +11,7 @@ Colección de siete proyectos C# completos y un nuevo proyecto en desarrollo. Ca
 | [SecureFiles](CSharpProjects/SecureFiles/README.md) | Documentos por organización | API key, límites, firma de archivo, SHA-256 |
 | [BookingEngine](CSharpProjects/BookingEngine/README.md) | Agenda de recursos | UTC, prevención de solapamientos, hold temporal |
 | [Inventory Control API](CSharpProjects/InventoryControl/README.md) | Inventario multi-región | EF Core, PostgreSQL, idempotencia, concurrencia optimista |
-| [FeatureGate](CSharpProjects/FeatureGate/README.md) | Activación gradual de funciones (en desarrollo) | ASP.NET Core, PostgreSQL, EF Core, migraciones, rollout estable |
+| [FeatureGate](CSharpProjects/FeatureGate/README.md) | Activación gradual de funciones (en desarrollo) | ASP.NET Core, PostgreSQL, EF Core, migraciones, rollout estable, pruebas unitarias |
 
 ## Requisitos y ejecución
 
@@ -35,7 +35,13 @@ docker compose up --build
 
 FeatureGate también necesita PostgreSQL y credenciales locales. Sigue [su guía](CSharpProjects/FeatureGate/README.md) antes de ejecutar la aplicación.
 
-La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución completa en cada push y pull request; Inventory Control API forma parte de ella y añade un entorno PostgreSQL mediante Docker Compose. No se incluyen credenciales ni datos empresariales reales.
+La solución completa está en LibraryManagement.slnx. GitHub Actions compila la solución completa y ejecuta las pruebas unitarias de FeatureGate en cada push y pull request a main. Inventory Control API forma parte de la solución y añade un entorno PostgreSQL mediante Docker Compose. No se incluyen credenciales ni datos empresariales reales.
+
+Para ejecutar las pruebas de FeatureGate desde la raíz:
+
+~~~powershell
+dotnet test CSharpProjects/FeatureGate.Tests/FeatureGate.Tests.csproj --configuration Release
+~~~
 
 ## Persistencia y alcance
 
@@ -43,4 +49,4 @@ Los servicios escriben datos locales en su carpeta data. Portfolio.Storage seria
 
 ## Contribuciones y portafolio
 
-Los proyectos están diseñados para ser ejecutables y para que sus decisiones puedan revisarse desde las guías de cada carpeta. La automatización de compilación no ejecuta pruebas: esta colección debe ampliarse con suites de pruebas y contenedores de integración.
+Los proyectos están diseñados para ser ejecutables y para que sus decisiones puedan revisarse desde las guías de cada carpeta. La suite de FeatureGate cubre su lógica de rollout con pruebas unitarias. Aún quedan por agregar pruebas de integración HTTP y base de datos.
